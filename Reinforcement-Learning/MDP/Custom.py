@@ -1,11 +1,17 @@
 import numpy as np
 import itertools
+import gymnasium as gym
+from gymnasium import spaces
 
-class CustomFrozenLakeEnv:
+class CustomFrozenLakeEnv(gym.Env):
+
     def __init__(self, P):
+        super().__init__()
         self.P = P
-        self.unwrapped = self  # so that env.unwrapped.P works
         self.start_state=0
+        self.current_state = self.start_state
+        self.observation_space = spaces.Discrete(len(P))
+        self.action_space = spaces.Discrete(len(P[0]))
 
     def step(self, action):
         transitions = self.P[self.current_state][action]
@@ -16,11 +22,11 @@ class CustomFrozenLakeEnv:
         prob, next_state, reward, done = transitions[i]
         
         self.current_state = next_state
-        return next_state, reward, done, {},{}
+        return next_state, reward, done, False,{}
 
-    def reset(self):
+    def reset(self,*, seed=None, options=None):
         self.current_state = self.start_state  
-        return self.current_state
+        return (self.current_state,{})
 
 
 #this function takes map as input and outputs the dynamics(env.P) of the environmrnt
@@ -58,20 +64,13 @@ def map_to_p(num_row,num_col,ACTIONS,grid):
 
     return P
 
-#First Custom Environment
 
 LEFT = 0
 DOWN = 1
 RIGHT = 2
 UP = 3
-DOWN_LEFT = 4
-DOWN_RIGHT = 5
-UP_RIGHT = 6
-UP_LEFT = 7 
 
 ACTIONS=[LEFT, DOWN, RIGHT, UP]
-
-# ACTIONS_EXT=[LEFT, DOWN, RIGHT, UP,UP_LEFT,UP_RIGHT,DOWN_LEFT,DOWN_RIGHT]
 
 # Movement vectors
 action_to_delta = {
@@ -79,15 +78,13 @@ action_to_delta = {
     DOWN:         (1, 0),
     RIGHT:        (0, 1),
     UP:           (-1, 0),
-    UP_LEFT:      (-1, -1),
-    UP_RIGHT:     (-1, 1),
-    DOWN_LEFT:    (1, -1),
-    DOWN_RIGHT:   (1, 1)
 }
 
 def to_state(row, col,num_col):
     return row * num_col + col
 
+
+#First Custom Environment
 orig_grid = np.array([list(row) for row in [
     "SFFF",
     "FHFH",
@@ -97,6 +94,7 @@ orig_grid = np.array([list(row) for row in [
 
 custom1_prob = map_to_p(4,4,ACTIONS,orig_grid)
 
+# Second Custom Environment
 extended_grid = np.array([list(row) for row in [
     "SFFFFFFF",
     "FFFFFHFF",
