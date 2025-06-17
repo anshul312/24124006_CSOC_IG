@@ -16,7 +16,6 @@ class CustomCliffEnv(gym.Env):
     def step(self, action):
         transitions = self.P[self.current_state][action]
         
-        # Sample one of the possible transitions based on probability
         probs = [t[0] for t in transitions]
         i = np.random.choice(len(transitions), p=probs)
         prob, next_state, reward, done = transitions[i]
@@ -48,7 +47,6 @@ def map_to_p(num_row,num_col,ACTIONS,grid):
                 li.append((1.0, s, 0.0, True))
                 continue
 
-            # Possible transitions: intended direction or perpendicular to intended
             delta = action_to_delta[a]
             
             # Rewards + done
@@ -87,7 +85,6 @@ def to_state(row, col,num_col):
     return row * num_col + col
 
 
-#First Custom Environment
 grid = np.array([list(row) for row in [
     "LLLLLLLLLLLL",
     "LLLLLLLLLLLL",
